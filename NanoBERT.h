@@ -3,6 +3,9 @@
 
 #include <msgpck.h>
 
+#ifndef NANO_BERT_RPC_MAX_ATOM_LEN
+#define NANO_BERT_RPC_MAX_ATOM_LEN 6
+#endif
 
 // =============== RPC Handlers ================ //
 

@@ -86,9 +86,10 @@ void rpcNoReplyMessageHeader(StreamBuff *outstream)
 
 /* ============ ATOMS ============= */
 
-#define BASE 26
+#define BASE 36
 
 #define atom_t uint32_t
+
 
 uint32_t ipow(uint32_t base, uint32_t exponent)
 {
@@ -110,7 +111,7 @@ atom_t atom_parse(char *atomStr)
   unsigned int c;
   unsigned int x,y;
 
-  int n = strlen(atomStr);
+  int n = strnlen(atomStr,NANO_BERT_RPC_MAX_ATOM_LEN);
 
   y = 0;
   for (i = 0; i < n; ++i) {
@@ -122,7 +123,7 @@ atom_t atom_parse(char *atomStr)
 }
 
 
-void atom_print(atom_t atom, StreamBuff *ostream) {
+void atom_print(StreamBuff *ostream, atom_t atom) {
 
   size_t i;
   char c;
