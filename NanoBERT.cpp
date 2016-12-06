@@ -30,7 +30,7 @@ RpcMessage rpcMessageRead(StreamBuff *instream, StreamBuff *outstream)
   res4 &= (rpc_msg.version == RpcMessageTypes::MAGIC_VERSION);
 
   if (!res) {
-    Serial.println("rpc msg err");
+    Serial.println(F("rpc msg err"));
     rpc_msg.type = RpcMessageTypes::Error;
     rpc_msg.method = RpcProtocolCodes::UnableToReadHeader;
     return rpc_msg;
@@ -42,7 +42,7 @@ RpcMessage rpcMessageRead(StreamBuff *instream, StreamBuff *outstream)
   rpc_msg.data = outstream;
 
   if (!res) {
-    Serial.println("msg err");
+    Serial.println(F("msg err"));
     rpc_msg.type = RpcMessageTypes::Error;
     rpc_msg.method = RpcProtocolCodes::UnableToReadHeader;
     return rpc_msg;
@@ -55,7 +55,6 @@ RpcMessage rpcMessageRead(StreamBuff *instream, StreamBuff *outstream)
 void rpcMessageWrite(StreamBuff *ostream, RpcMessage *rpc_msg)
 {
   // Read message
-
   bool res = true;
   uint8_t magic_version = RpcMessageTypes::MAGIC_VERSION;
 
@@ -122,8 +121,8 @@ atom_t atom_parse(char *atomStr)
   return y;
 }
 
-
 void atom_print(StreamBuff *ostream, atom_t atom) {
+
 
   size_t i;
   char c;
