@@ -1,40 +1,6 @@
 #include "NanoBERT.h"
 
-uint8_t magive_version_bert_rpc = 0x83;
-
 // =============== RPC Handlers ================ //
-
-enum RpcMessageTypes : uint8_t
-{
-  Call = 0,
-  Reply,
-  Error,
-  Cast,
-  NoReply,
-  Info
-};
-
-enum RpcProtocolCodes : uint8_t
-{
-  Undesignated = 0,
-  UnableToReadHeader = 1,
-  UnableToReadData = 2,
-  NoSuchModule = 3,
-  NoSuchFunction = 4
-};
-
-
-struct RpcMessage
-{
-    uint8_t version;
-    RpcMessageTypes type;
-    uint8_t module;
-    uint8_t method;
-    StreamBuff *data;
-};
-
-uint8_t __rpc_arg_stream[RH_RF95_MAX_MESSAGE_LEN]; // <-- Dont put this on the stack
-StreamBuff rpc_arg_stream(__rpc_arg_stream, RH_RF95_MAX_MESSAGE_LEN);
 
 void copyStream(StreamBuff *outstream, StreamBuff *instream)
 {
@@ -43,7 +9,7 @@ void copyStream(StreamBuff *outstream, StreamBuff *instream)
   }
 }
 
-RpcMessage rpcMessageRead(StreamBuff *instream)
+RpcMessage rpcMessageRead(StreamBuff *instream, StreamBuff *outstream)
 {
   // Read message
   RpcMessage rpc_msg;
@@ -61,7 +27,7 @@ RpcMessage rpcMessageRead(StreamBuff *instream)
   res1 &= msgpck_read_bin(instream, (uint8_t*)&rpc_msg.type, 1);
   res2 &= msgpck_read_bin(instream, &rpc_msg.module, 1);
   res3 &= msgpck_read_bin(instream, &rpc_msg.method, 1);
-  res4 &= (rpc_msg.version == magive_version_bert_rpc);
+  res4 &= (rpc_msg.version == RpcMessageTypes::MAGIC_VERSION);
 
   if (!res) {
     Serial.println("rpc msg err");
@@ -71,9 +37,9 @@ RpcMessage rpcMessageRead(StreamBuff *instream)
   }
 
   // Remaining portion is the data packet
-  rpc_arg_stream.flush();
-  copyStream(&rpc_arg_stream, instream);
-  rpc_msg.data = &rpc_arg_stream;
+  outstream->flush();
+  copyStream(outstream, instream);
+  rpc_msg.data = outstream;
 
   if (!res) {
     Serial.println("msg err");
@@ -91,8 +57,10 @@ void rpcMessageWrite(StreamBuff *ostream, RpcMessage *rpc_msg)
   // Read message
 
   bool res = true;
+  uint8_t magic_version = RpcMessageTypes::MAGIC_VERSION;
+
   msgpck_write_array_header(ostream, 5);
-  msgpck_write_bin(ostream, &magive_version_bert_rpc, 1);
+  msgpck_write_bin(ostream, (uint8_t*)&magic_version, 1);
   msgpck_write_bin(ostream, (uint8_t*)&rpc_msg->type, 1);
   msgpck_write_bin(ostream, &rpc_msg->module, 1);
   msgpck_write_bin(ostream, &rpc_msg->method, 1);
@@ -103,7 +71,7 @@ void rpcMessageWrite(StreamBuff *ostream, RpcMessage *rpc_msg)
 void rpcReplyMessageHeader(StreamBuff *outstream, StreamBuff *data)
 {
   msgpck_write_array_header(outstream, 3);
-  msgpck_write_integer(outstream, magive_version_bert_rpc);
+  msgpck_write_integer(outstream, MAGIC_VERSION);
   msgpck_write_integer(outstream, RpcMessageTypes::Reply);
   copyStream(outstream, data);
 }
@@ -111,7 +79,7 @@ void rpcReplyMessageHeader(StreamBuff *outstream, StreamBuff *data)
 void rpcNoReplyMessageHeader(StreamBuff *outstream)
 {
   msgpck_write_array_header(outstream, 2);
-  msgpck_write_integer(outstream, magive_version_bert_rpc);
+  msgpck_write_integer(outstream, MAGIC_VERSION);
   msgpck_write_integer(outstream, RpcMessageTypes::NoReply);
 }
 

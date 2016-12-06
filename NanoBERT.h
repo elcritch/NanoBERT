@@ -3,7 +3,6 @@
 
 #include <msgpck.h>
 
-uint8_t magive_version_bert_rpc = 0x83;
 
 // =============== RPC Handlers ================ //
 
@@ -14,7 +13,8 @@ enum RpcMessageTypes : uint8_t
   Error,
   Cast,
   NoReply,
-  Info
+  Info,
+  MAGIC_VERSION = 0x83,
 };
 
 enum RpcProtocolCodes : uint8_t
@@ -36,12 +36,9 @@ struct RpcMessage
     StreamBuff *data;
 };
 
-uint8_t __rpc_arg_stream[RH_RF95_MAX_MESSAGE_LEN]; // <-- Dont put this on the stack
-StreamBuff rpc_arg_stream(__rpc_arg_stream, RH_RF95_MAX_MESSAGE_LEN);
-
 void copyStream(StreamBuff *outstream, StreamBuff *instream);
 
-RpcMessage rpcMessageRead(StreamBuff *instream);
+RpcMessage rpcMessageRead(StreamBuff *instream, StreamBuff *outstream);
 
 void rpcMessageWrite(StreamBuff *ostream, RpcMessage *rpc_msg);
 
