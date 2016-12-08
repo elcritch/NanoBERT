@@ -69,17 +69,21 @@ void rpcMessageWrite(StreamBuff *ostream, RpcMessage *rpc_msg)
 
 void rpcReplyMessageHeader(StreamBuff *outstream, StreamBuff *data)
 {
+  uint8_t magic_version = MAGIC_VERSION;
+  uint8_t msg_type = RpcMessageTypes::Reply;
   msgpck_write_array_header(outstream, 3);
-  msgpck_write_integer(outstream, MAGIC_VERSION);
-  msgpck_write_integer(outstream, RpcMessageTypes::Reply);
+  msgpck_write_bin(outstream, &magic_version,1);
+  msgpck_write_bin(outstream, &msg_type,1);
   copyStream(outstream, data);
 }
 
 void rpcNoReplyMessageHeader(StreamBuff *outstream)
 {
+  uint8_t magic_version = MAGIC_VERSION;
+  uint8_t msg_type = RpcMessageTypes::NoReply;
   msgpck_write_array_header(outstream, 2);
-  msgpck_write_integer(outstream, MAGIC_VERSION);
-  msgpck_write_integer(outstream, RpcMessageTypes::NoReply);
+  msgpck_write_bin(outstream, &magic_version,1);
+  msgpck_write_bin(outstream, &msg_type,1);
 }
 
 
