@@ -7,7 +7,8 @@
 #define NANO_BERT_RPC_MAX_ATOM_LEN 6
 #endif
 
-// =============== RPC Handlers ================ //
+// =============== RPC Helpers ================ //
+
 
 enum RpcMessageTypes : uint8_t
 {
@@ -37,6 +38,8 @@ struct RpcMessage
     uint8_t method;
     StreamBuff *data;
 };
+
+bool handle_rpc(StreamBuff& rpc_msg);
 
 void copyStream(StreamBuff *outstream, StreamBuff *instream);
 

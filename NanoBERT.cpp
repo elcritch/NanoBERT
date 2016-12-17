@@ -9,6 +9,52 @@ void copyStream(StreamBuff *outstream, StreamBuff *instream)
   }
 }
 
+template<typename HandleRpcMessageRecieve, typename HandleRpcMethods, typename CallReplyFunction>
+bool handle_rpc(HandleRpcMessageRecieve msg_recv_func, StreamBuff& rpc_arg_stream, CallReplyFunction msg_reply_func)
+{
+  uint8_t len = RH_RF95_MAX_MESSAGE_LEN; // always reset to max length, will truncate msg otherwise
+
+
+  StreamBuff * rpc_msg_stream = msg_recv_func();
+
+    msgpck_to_json( &Serial, &rpc_msg_stream.reset()); Serial.println(F("!"));
+
+    StreamBuff rpc_stream(rpc_msg_stream.data, len);
+    RpcMessage rpc_msg = rpcMessageRead(&rpc_stream, &rpc_arg_stream);
+
+    StreamBuff json_stream(rpc_msg_stream.data, len);
+    msgpck_to_json( &Serial, &json_stream); Serial.println();
+
+    /* --------- Handle NanoBertRpc Call's ---------- */
+    // rpc_msg_stream.flush();
+
+    switch (rpc_msg.method) {
+      case RpcMethods::GetSensorData:
+        handle_call_get_sensor_data(&rpc_arg_stream);
+
+        break;
+      case RpcMethods::ReadSensorData:
+        handle_call_read_sensors();
+        break;
+    }
+
+    /* --------- Handle NanoBertRpc Cast's ---------- */
+
+    if (rpc_msg.type == RpcMessageTypes::Call) {
+
+      Serial.print(F("-->")); msgpck_to_json( &Serial, &rpc_arg_stream.reset()); Serial.print(F(":")); Serial.println(rpc_arg_stream.max_position);
+
+      delay(10);
+
+      msg_reply_func(&rpc_arg_stream);
+
+    } else if (rpc_msg.type == RpcMessageTypes::Cast) {
+    }
+  }
+}
+
+
+
 RpcMessage rpcMessageRead(StreamBuff *instream, StreamBuff *outstream)
 {
   // Read message
