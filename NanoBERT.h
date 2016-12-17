@@ -29,7 +29,6 @@ enum RpcProtocolCodes : uint8_t
   NoSuchFunction = 4
 };
 
-
 struct RpcMessage
 {
     uint8_t version;
