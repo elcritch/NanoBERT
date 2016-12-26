@@ -1,6 +1,7 @@
 #ifndef __NANO_BERT_RPC_H__
 #define __NANO_BERT_RPC_H__
 
+#include <Stream.h>
 #include <msgpck.h>
 
 #ifndef NANO_BERT_RPC_MAX_ATOM_LEN
