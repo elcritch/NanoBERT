@@ -30,7 +30,7 @@ RpcMessage rpcMessageRead(StreamBuff *instream, StreamBuff *outstream)
   res4 &= (rpc_msg.version == RpcMessageTypes::MAGIC_VERSION);
 
   if (!res) {
-    Serial.println(F("rpc msg err"));
+    // Serial.println(F("rpc msg err"));
     rpc_msg.type = RpcMessageTypes::Error;
     rpc_msg.method = RpcProtocolCodes::UnableToReadHeader;
     return rpc_msg;
@@ -42,7 +42,7 @@ RpcMessage rpcMessageRead(StreamBuff *instream, StreamBuff *outstream)
   rpc_msg.data = outstream;
 
   if (!res) {
-    Serial.println(F("msg err"));
+    // Serial.println(F("msg err"));
     rpc_msg.type = RpcMessageTypes::Error;
     rpc_msg.method = RpcProtocolCodes::UnableToReadHeader;
     return rpc_msg;
