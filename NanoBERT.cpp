@@ -2,17 +2,18 @@
 
 // =============== RPC Handlers ================ //
 
-void copyStream(StreamBuff *outstream, StreamBuff *instream)
+void copyStream(StreamBuff& outstream, StreamBuff& instream)
 {
-  while (outstream->available()) {
-    outstream->write(instream->read());
+  while (outstream.available()) {
+    outstream.write(instream.read());
   }
 }
 
-RpcMessage rpcMessageRead(StreamBuff *instream, StreamBuff *outstream)
+template<size_t T>
+RpcMessage rpcMessageRead(StreamBuffStack<T>& instream)
 {
   // Read message
-  RpcMessage rpc_msg;
+  RpcMessage rpc_msg = RpcMessageContainer<T>();
 
   bool res = true;
   bool res0 = true;
@@ -22,11 +23,11 @@ RpcMessage rpcMessageRead(StreamBuff *instream, StreamBuff *outstream)
   bool res4 = true;
 
   uint32_t msg_arr_size;
-  res &= msgpck_read_array_size(instream, &msg_arr_size);
-  res0 &= msgpck_read_bin(instream, &rpc_msg.version, 1);
-  res1 &= msgpck_read_bin(instream, (uint8_t*)&rpc_msg.type, 1);
-  res2 &= msgpck_read_bin(instream, &rpc_msg.module, 1);
-  res3 &= msgpck_read_bin(instream, &rpc_msg.method, 1);
+  res &= msgpck_read_array_size(&instream, &msg_arr_size);
+  res0 &= msgpck_read_bin(&instream, &rpc_msg.version, 1);
+  res1 &= msgpck_read_bin(&instream, (uint8_t*)&rpc_msg.type, 1);
+  res2 &= msgpck_read_bin(&instream, &rpc_msg.module, 1);
+  res3 &= msgpck_read_bin(&instream, &rpc_msg.method, 1);
   res4 &= (rpc_msg.version == RpcMessageTypes::MAGIC_VERSION);
 
   if (!res) {
@@ -37,9 +38,9 @@ RpcMessage rpcMessageRead(StreamBuff *instream, StreamBuff *outstream)
   }
 
   // Remaining portion is the data packet
-  outstream->flush();
-  copyStream(outstream, instream);
-  rpc_msg.data = outstream;
+  rpc_msg.data.flush();
+  copyStream(rpc_msg.data, instream);
+  // rpc_msg.data = outstream;
 
   if (!res) {
     // Serial.println(F("msg err"));
@@ -52,32 +53,20 @@ RpcMessage rpcMessageRead(StreamBuff *instream, StreamBuff *outstream)
   return rpc_msg;
 }
 
-void rpcMessageWrite(StreamBuff *ostream, RpcMessage *rpc_msg)
-{
-  // Read message
-  bool res = true;
-  uint8_t magic_version = RpcMessageTypes::MAGIC_VERSION;
 
-  msgpck_write_array_header(ostream, 5);
-  msgpck_write_bin(ostream, (uint8_t*)&magic_version, 1);
-  msgpck_write_bin(ostream, (uint8_t*)&rpc_msg->type, 1);
-  msgpck_write_bin(ostream, &rpc_msg->module, 1);
-  msgpck_write_bin(ostream, &rpc_msg->method, 1);
-  copyStream(ostream, rpc_msg->data);
-}
-
-
-void rpcReplyMessageHeader(StreamBuff *outstream, StreamBuff *data)
+template<size_t T>
+void rpcReplyMessageHeader(StreamBuffStack<T>& outstream, StreamBuffStack<T>& data)
 {
   uint8_t magic_version = MAGIC_VERSION;
   uint8_t msg_type = RpcMessageTypes::Reply;
-  msgpck_write_array_header(outstream, 3);
-  msgpck_write_bin(outstream, &magic_version,1);
-  msgpck_write_bin(outstream, &msg_type,1);
+  msgpck_write_array_header(&outstream, 3);
+  msgpck_write_bin(&outstream, &magic_version,1);
+  msgpck_write_bin(&outstream, &msg_type,1);
   copyStream(outstream, data);
 }
 
-void rpcNoReplyMessageHeader(StreamBuff *outstream)
+template<size_t T>
+void rpcNoReplyMessageHeader(StreamBuffStack<T>& outstream)
 {
   uint8_t magic_version = MAGIC_VERSION;
   uint8_t msg_type = RpcMessageTypes::NoReply;
@@ -89,7 +78,7 @@ void rpcNoReplyMessageHeader(StreamBuff *outstream)
 
 /* ============ ATOMS ============= */
 
-#define BASE 36
+// #define BASE 36
 
 #define atom_t uint32_t
 
