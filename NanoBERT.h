@@ -75,6 +75,12 @@ RpcMessageContainer<T> rpcMessageRead(StreamBuffStack<T>& instream)
   res3 &= msgpck_read_bin(&instream, &rpc_msg.method, 1);
   res4 &= (rpc_msg.version == RpcMessageTypes::MAGIC_VERSION);
 
+  {
+    Serial.print("rpc_msg read: type: "); Serial.println(rpc_msg.type);
+    Serial.print("rpc_msg read: module: "); Serial.println(rpc_msg.module);
+    Serial.print("rpc_msg read: method: "); Serial.println(rpc_msg.method);
+  }
+
   if (!res) {
     // Serial.println(F("rpc msg err"));
     rpc_msg.type = RpcMessageTypes::Error;
