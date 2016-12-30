@@ -134,6 +134,8 @@ void rpcMessageWrite(RpcMessage& rpc_msg, _ARG_WRITER _arg_writer)
 {
   StreamBuff * ostream = rpc_msg.data;
 
+  ostream->flush();
+
   // Read message
   bool res = true;
   uint8_t magic_version = RpcMessageTypes::MAGIC_VERSION;
