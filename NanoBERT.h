@@ -38,6 +38,9 @@ struct RpcMessage
     uint8_t module;
     uint8_t method;
     StreamBuff * data;
+
+
+    virtual StreamBuff * data_ptr() { return data; }
 };
 
 template<size_t T>
@@ -45,9 +48,7 @@ struct RpcMessageContainer : public RpcMessage
 {
     StreamBuffStack<T> static_data;
 
-    RpcMessageContainer() {
-      this->data = &static_data;
-    }
+    virtual StreamBuff * data_ptr() { return &static_data; }
 };
 
 
@@ -75,12 +76,6 @@ RpcMessageContainer<T> rpcMessageRead(StreamBuffStack<T>& instream)
   res3 &= msgpck_read_bin(&instream, &rpc_msg.method, 1);
   res4 &= (rpc_msg.version == RpcMessageTypes::MAGIC_VERSION);
 
-  {
-    Serial.print("rpc_msg read: type: "); Serial.println(rpc_msg.type);
-    Serial.print("rpc_msg read: module: "); Serial.println(rpc_msg.module);
-    Serial.print("rpc_msg read: method: "); Serial.println(rpc_msg.method);
-  }
-
   if (!res) {
     // Serial.println(F("rpc msg err"));
     rpc_msg.type = RpcMessageTypes::Error;
@@ -88,10 +83,21 @@ RpcMessageContainer<T> rpcMessageRead(StreamBuffStack<T>& instream)
     return rpc_msg;
   }
 
+  {
+    Serial.print("instream read: pos: "); Serial.println(instream.pos);
+    Serial.print("instream read: max_position: "); Serial.println(instream.len);
+  }
+
+
   // Remaining portion is the data packet
-  rpc_msg.data->flush();
+  rpc_msg.static_data.flush();
   copyStream(rpc_msg.static_data, instream);
   // rpc_msg.data = outstream;
+
+  {
+    Serial.print("instream' read: pos: "); Serial.println(instream.pos);
+    Serial.print("instream' read: max_position: "); Serial.println(instream.len);
+  }
 
   if (!res) {
     // Serial.println(F("msg err"));
@@ -132,7 +138,7 @@ void rpcNoReplyMessageHeader(StreamBuffStack<T>& outstream)
 template<class _ARG_WRITER>
 void rpcMessageWrite(RpcMessage& rpc_msg, _ARG_WRITER _arg_writer)
 {
-  StreamBuff * ostream = rpc_msg.data;
+  StreamBuff * ostream = rpc_msg.data_ptr();
 
   ostream->flush();
 

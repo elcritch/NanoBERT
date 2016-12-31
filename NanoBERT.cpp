@@ -4,7 +4,7 @@
 
 void copyStream(StreamBuff& outstream, StreamBuff& instream)
 {
-  while (outstream.available()) {
+  while (instream.available()) {
     outstream.write(instream.read());
   }
 }
