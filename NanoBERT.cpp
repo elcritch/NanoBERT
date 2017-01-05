@@ -9,8 +9,6 @@ void copyStream(StreamBuff& outstream, StreamBuff& instream)
   }
 }
 
-
-
 /* ============ ATOMS ============= */
 
 // #define BASE 36

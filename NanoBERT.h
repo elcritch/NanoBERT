@@ -68,6 +68,8 @@ struct RpcMessageContainer : public RpcMessage
 
 void copyStream(StreamBuff& outstream, StreamBuff& instream);
 
+// int freeRam();
+
 
 template<size_t T>
 RpcMessageContainer<T> rpcMessageRead(StreamBuffStack<T>& instream)
@@ -99,8 +101,8 @@ RpcMessageContainer<T> rpcMessageRead(StreamBuffStack<T>& instream)
   }
 
   {
-    Serial.print("instream read: pos: "); Serial.println(instream.pos);
-    Serial.print("instream read: max_position: "); Serial.println(instream.len);
+    Serial.print(F("instream read: pos: ")); Serial.println(instream.pos);
+    Serial.print(F("instream read: max_position: ")); Serial.println(instream.len);
   }
 
 
@@ -110,8 +112,8 @@ RpcMessageContainer<T> rpcMessageRead(StreamBuffStack<T>& instream)
   // rpc_msg.data = outstream;
 
   {
-    Serial.print("instream' read: pos: "); Serial.println(instream.pos);
-    Serial.print("instream' read: max_position: "); Serial.println(instream.len);
+    Serial.print(F("instream' read: pos: ")); Serial.println(instream.pos);
+    Serial.print(F("instream' read: max_position: ")); Serial.println(instream.len);
   }
 
   if (!res) {
