@@ -41,8 +41,6 @@ struct RpcMessageRaw
     METADATA metadata;
 
     StreamBuff * data;
-
-    virtual StreamBuff * data_ptr() { return data; }
 };
 
 struct EmbeddedRpcMetadata
@@ -57,25 +55,17 @@ struct RpcMessage : RpcMessageRaw<EmbeddedRpcMetadata>
 
 };
 
-template<size_t T>
-struct RpcMessageContainer : public RpcMessage
-{
-    StreamBuffStack<T> static_data;
-
-    virtual StreamBuff * data_ptr() { return &static_data; }
-};
-
-
 void copyStream(StreamBuff& outstream, StreamBuff& instream);
 
 // int freeRam();
 
 
 template<size_t T>
-RpcMessageContainer<T> rpcMessageRead(StreamBuffStack<T>& instream)
+RpcMessage rpcMessageRead(StreamBuffStack<T>& outstream, StreamBuffStack<T>& instream)
 {
   // Read message
-  RpcMessageContainer<T> rpc_msg;
+  RpcMessage rpc_msg;
+  rpc_msg.data = &outstream;
 
   bool res = true;
   bool res0 = true;
@@ -101,8 +91,8 @@ RpcMessageContainer<T> rpcMessageRead(StreamBuffStack<T>& instream)
   }
 
   // Remaining portion is the data packet
-  rpc_msg.static_data.flush();
-  copyStream(rpc_msg.static_data, instream);
+  rpc_msg.data->flush();
+  copyStream(*rpc_msg.data, instream);
 
   if (!res) {
     // Serial.println(F("msg err"));
@@ -142,7 +132,7 @@ void rpcNoReplyMessageHeader(StreamBuffStack<T>& outstream)
 template<class _ARG_WRITER>
 void rpcMessageWrite(RpcMessage& rpc_msg, _ARG_WRITER _arg_writer)
 {
-  StreamBuff * ostream = rpc_msg.data_ptr();
+  StreamBuff * ostream = rpc_msg.data;
 
   ostream->flush();
 
