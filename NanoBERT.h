@@ -100,21 +100,9 @@ RpcMessageContainer<T> rpcMessageRead(StreamBuffStack<T>& instream)
     return rpc_msg;
   }
 
-  {
-    Serial.print(F("instream read: pos: ")); Serial.println(instream.pos);
-    Serial.print(F("instream read: max_position: ")); Serial.println(instream.len);
-  }
-
-
   // Remaining portion is the data packet
   rpc_msg.static_data.flush();
   copyStream(rpc_msg.static_data, instream);
-  // rpc_msg.data = outstream;
-
-  {
-    Serial.print(F("instream' read: pos: ")); Serial.println(instream.pos);
-    Serial.print(F("instream' read: max_position: ")); Serial.println(instream.len);
-  }
 
   if (!res) {
     // Serial.println(F("msg err"));
@@ -122,7 +110,6 @@ RpcMessageContainer<T> rpcMessageRead(StreamBuffStack<T>& instream)
     rpc_msg.method = RpcProtocolCodes::UnableToReadHeader;
     return rpc_msg;
   }
-
 
   return rpc_msg;
 }
