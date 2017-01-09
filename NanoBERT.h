@@ -45,8 +45,8 @@ struct RpcMessageRaw
 
 struct EmbeddedRpcMetadata
 {
-  uint8_t sender_id;
-  uint8_t recipient_id;
+  uint8_t from_id;
+  uint8_t to_id;
 };
 
 
